@@ -64,12 +64,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(err.message || "Login failed. Please try again.");
       }
       const data = await response.json();
-      const normalized = deepCamelToSnake(data);
-      const { user, accessToken } = normalized;
+      // Normalise only the user object (snake_case → frontend types);
+      // token keys are already snake_case and must not be transformed.
+      const user = deepCamelToSnake(data.user);
+      const { accessToken } = data;
       localStorage.setItem("accessToken", accessToken);
-      if (data.refreshToken) {
-        localStorage.setItem("refreshToken", data.refreshToken);
-      }
       set({
         user,
         accessToken,

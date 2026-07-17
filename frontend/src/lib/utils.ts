@@ -35,16 +35,23 @@ function camelToSnake(str: string): string {
  * - Arrays are mapped element-by-element.
  * - Plain objects have every key converted and the result recursed.
  * - Primitives, null, and undefined pass through unchanged.
+ *
+ * @param preserveKeys – optional set of top-level keys to leave untouched
+ *   (e.g. `"accessToken"` / `"refreshToken"` which must keep their camelCase
+ *    names because the frontend destructures them from the response).
  */
-export function deepCamelToSnake<T>(data: T): T {
+export function deepCamelToSnake<T>(
+  data: T,
+  preserveKeys?: Set<string>,
+): T {
   if (Array.isArray(data)) {
-    return data.map(deepCamelToSnake) as unknown as T;
+    return data.map((item) => deepCamelToSnake(item, preserveKeys)) as unknown as T;
   }
 
   if (typeof data === "object" && data !== null) {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
-      const snakeKey = camelToSnake(key);
+      const snakeKey = preserveKeys?.has(key) ? key : camelToSnake(key);
       result[snakeKey] = deepCamelToSnake(value);
     }
     return result as T;

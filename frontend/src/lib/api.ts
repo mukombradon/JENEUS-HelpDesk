@@ -76,9 +76,11 @@ api.interceptors.request.use(
 // convention = camelCase).
 // ---------------------------------------------------------------------------
 
+const TOKEN_KEYS = new Set(["accessToken", "refreshToken"]);
+
 api.interceptors.response.use((response) => {
   if (response.data && typeof response.data === "object") {
-    response.data = deepCamelToSnake(response.data);
+    response.data = deepCamelToSnake(response.data, TOKEN_KEYS);
   }
   return response;
 });
