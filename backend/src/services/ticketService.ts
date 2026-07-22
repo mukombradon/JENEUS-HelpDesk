@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { AppError } from '../utils/AppError';
 import type {
@@ -182,7 +183,7 @@ export async function createTicket(
       type: data.type,
       title: data.title,
       description: data.description,
-      priority: data.priority as any,
+      priority: data.priority,
       clientId: data.clientId,
       contactId: data.contactId,
       categoryId: data.categoryId,
@@ -318,7 +319,7 @@ export async function listTickets(filters: TicketQueryInput) {
     dateTo,
   } = filters;
 
-  const where: any = {
+  const where: Prisma.TicketWhereInput = {
     deletedAt: null,
   };
 
@@ -358,17 +359,26 @@ export async function listTickets(filters: TicketQueryInput) {
   if (slaStatus === 'breached') {
     where.slaBreach = true;
   } else if (slaStatus === 'warning') {
-    // Tickets approaching SLA deadline (within 25% of the average SLA window)
-    // but not yet breached. Filter for tickets whose resolutionDueAt is within
-    // the near future (next 25% of typical SLA duration) or already past.
-    const avgWindow = await getAvgResolutionWindow();
-    const warningThreshold = avgWindow * 0.25;
-    const nearFuture = new Date(Date.now() + warningThreshold);
+    // Tickets approaching SLA deadline (within 25% of their own SLA window)
+    // but not yet breached. Since Prisma WHERE can't express per-row math,
+    // we fetch candidates and filter in-memory.
+    const candidates = await prisma.ticket.findMany({
+      where: {
+        ...where,
+        slaBreach: false,
+        resolutionDueAt: { not: null, gt: new Date() },
+      },
+      select: { id: true, createdAt: true, resolutionDueAt: true },
+    });
+    const warningIds = candidates
+      .filter((t) => {
+        const window = t.resolutionDueAt!.getTime() - t.createdAt.getTime();
+        const remaining = t.resolutionDueAt!.getTime() - Date.now();
+        return remaining < window * 0.25;
+      })
+      .map((t) => t.id);
+    where.id = { in: warningIds };
     where.slaBreach = false;
-    where.resolutionDueAt = {
-      not: null,
-      lte: nearFuture,
-    };
   } else if (slaStatus === 'ok') {
     where.slaBreach = false;
     where.resolutionDueAt = { not: null };
@@ -386,7 +396,7 @@ export async function listTickets(filters: TicketQueryInput) {
     'resolutionDueAt',
   ];
   const sortField = allowedSortFields.includes(sort) ? sort : 'createdAt';
-  const orderBy = { [sortField]: order };
+  const orderBy: Prisma.TicketOrderByWithRelationInput = { [sortField]: order };
 
   const skip = (page - 1) * limit;
 
@@ -420,32 +430,6 @@ export async function listTickets(filters: TicketQueryInput) {
     },
   };
 }
-
-// Internal helper for slaStatus warning - avoid using for now
-let _avgResolutionWindow = 60 * 60 * 1000; // 1 hour default
-
-async function getAvgResolutionWindow(): Promise<number> {
-  // Average time between createdAt and resolutionDueAt for tickets that have it
-  const ticketsWithSla = await prisma.ticket.findMany({
-    where: {
-      resolutionDueAt: { not: null },
-    },
-    select: { createdAt: true, resolutionDueAt: true },
-    take: 100,
-    orderBy: { createdAt: 'desc' },
-  });
-
-  if (ticketsWithSla.length === 0) return _avgResolutionWindow;
-
-  const avg =
-    ticketsWithSla.reduce((sum, t) => {
-      return sum + (t.resolutionDueAt!.getTime() - t.createdAt.getTime());
-    }, 0) / ticketsWithSla.length;
-
-  _avgResolutionWindow = avg;
-  return avg;
-}
-
 /**
  * Update ticket fields. Creates ActivityLog entries for each changed field.
  */
@@ -456,7 +440,7 @@ export async function updateTicket(id: string, data: UpdateTicketInput, userId: 
   }
 
   const changedFields: string[] = [];
-  const updateData: Record<string, any> = {};
+  const updateData: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(data)) {
     if (value === undefined) continue;
@@ -479,14 +463,10 @@ export async function updateTicket(id: string, data: UpdateTicketInput, userId: 
   }
 
   // Convert to Prisma-compatible format for enum fields
-  const prismaData: any = { ...updateData };
-  if (prismaData.type) prismaData.type = prismaData.type;
-  if (prismaData.priority) prismaData.priority = prismaData.priority;
-  if (prismaData.status) prismaData.status = prismaData.status;
 
   const ticket = await prisma.ticket.update({
     where: { id },
-    data: prismaData,
+    data: updateData as Prisma.TicketUpdateInput,
     include: {
       client: true,
       contact: true,
@@ -535,7 +515,7 @@ export async function statusChange(
     );
   }
 
-  const updateData: Record<string, any> = {
+  const updateData: Record<string, unknown> = {
     status: newStatus,
   };
 
@@ -554,7 +534,7 @@ export async function statusChange(
 
   const updated = await prisma.ticket.update({
     where: { id },
-    data: updateData,
+    data: updateData as Prisma.TicketUpdateInput,
     include: {
       client: { select: { name: true } },
       assignedAgent: {
@@ -564,7 +544,14 @@ export async function statusChange(
   });
 
   // Activity log
-  const logPayload: Record<string, any> = {
+  const logPayload: {
+    ticketId: string;
+    actorId: string;
+    actorType: 'staff' | 'client' | 'system';
+    action: string;
+    oldValue?: string;
+    newValue?: string;
+  } = {
     ticketId: id,
     actorId: userId,
     actorType: 'staff',
@@ -574,10 +561,10 @@ export async function statusChange(
   };
 
   if (reason) {
-    (logPayload as any).action = `status_changed: ${reason}`;
+    logPayload.action = `status_changed: ${reason}`;
   }
 
-  await createActivityLog(logPayload as any);
+  await createActivityLog(logPayload);
 
   // Notify relevant parties
   const notifyIds: string[] = [];
@@ -607,7 +594,7 @@ export async function assignTicket(
     throw new AppError('Ticket not found', 404, 'TICKET_NOT_FOUND');
   }
 
-  const updateData: Record<string, any> = {};
+  const updateData: Record<string, unknown> = {};
   const changes: string[] = [];
 
   if (params.agentId !== undefined) {
@@ -641,7 +628,7 @@ export async function assignTicket(
 
   const updated = await prisma.ticket.update({
     where: { id },
-    data: updateData,
+    data: updateData as Prisma.TicketUpdateInput,
     include: {
       assignedAgent: {
         select: { id: true, firstName: true, lastName: true, email: true },

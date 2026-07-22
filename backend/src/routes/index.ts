@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { Request, Response } from 'express';
 import authRoutes from './auth';
 import ticketRoutes from './tickets';
 import clientRoutes from './clients';
@@ -13,6 +14,11 @@ import portalRoutes from './portal';
 import reportRoutes from './reports';
 
 const router = Router();
+
+// ── Health check ────────────────────────────────────────────────────────────
+router.get('/health', (_req: Request, res: Response) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 router.use('/auth', authRoutes);
 router.use('/tickets', ticketRoutes);

@@ -236,7 +236,8 @@ export default function ClientDetailPage() {
     isError: clientError,
   } = useQuery({
     queryKey: ["clients", "detail", id],
-    queryFn: () => api.get<Client>(`/clients/${id}`).then((r) => r.data),
+    queryFn: () =>
+      api.get<{ client: Client }>(`/clients/${id}`).then((r) => r.data.client),
     enabled: !!id,
   });
 
@@ -247,7 +248,9 @@ export default function ClientDetailPage() {
   } = useQuery({
     queryKey: ["clients", "contacts", id],
     queryFn: () =>
-      api.get<ClientContact[]>(`/clients/${id}/contacts`).then((r) => r.data),
+      api
+        .get<{ contacts: ClientContact[] }>(`/clients/${id}/contacts`)
+        .then((r) => r.data.contacts),
     enabled: !!id,
   });
 

@@ -243,7 +243,7 @@ This project requires Redis for BullMQ job queues and Socket.io pub/sub. Since R
    SMTP_PORT=1025
    SMTP_USER=
    SMTP_PASS=
-   EMAIL_FROM="JENEUS HelpDesk <noreply@jeneusco.com>"
+   SMTP_FROM="JENEUS HelpDesk <noreply@jeneusco.com>"
 
    # ─── File Storage (S3 or Cloudflare R2) ────────────
    S3_BUCKET=jeneus-helpdesk-attachments

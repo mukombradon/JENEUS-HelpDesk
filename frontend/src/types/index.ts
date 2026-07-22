@@ -44,7 +44,6 @@ export interface User {
   first_name: string;
   last_name: string;
   email: string;
-  password_hash: string;
   role: Role;
   team_id: string | null;
   avatar_url: string | null;
@@ -96,6 +95,7 @@ export interface Category {
   name: string;
   icon: string;
   default_team_id: string | null;
+  subcategories?: Subcategory[];
   created_at: string;
   updated_at: string;
 }
@@ -205,13 +205,14 @@ export interface Notification {
 export interface KnowledgeArticle {
   id: string;
   title: string;
-  content: string;
+  body: string;
   category_id: string;
   author_id: string;
   view_count: number;
   helpful_count: number;
   not_helpful_count: number;
   is_published: boolean;
+  tags: string[];
   created_at: string;
   updated_at: string;
 }
@@ -375,15 +376,17 @@ export interface CreateCommentForm {
 
 export interface CreateArticleForm {
   title: string;
-  content: string;
+  body: string;
   category_id: string;
+  tags?: string[];
   is_published?: boolean;
 }
 
 export interface UpdateArticleForm {
   title?: string;
-  content?: string;
+  body?: string;
   category_id?: string;
+  tags?: string[];
   is_published?: boolean;
 }
 

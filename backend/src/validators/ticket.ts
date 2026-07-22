@@ -77,3 +77,19 @@ export const ticketQuerySchema = z.object({
 export type CreateTicketInput = z.infer<typeof createTicketSchema>;
 export type UpdateTicketInput = z.infer<typeof updateTicketSchema>;
 export type TicketQueryInput = z.infer<typeof ticketQuerySchema>;
+
+// ---------------------------------------------------------------------------
+// changeStatusSchema — PATCH /tickets/:id/status
+// ---------------------------------------------------------------------------
+export const changeStatusSchema = z.object({
+  status: ticketStatusEnum,
+  reason: z.string().max(500).optional(),
+});
+
+// ---------------------------------------------------------------------------
+// assignTicketSchema — PATCH /tickets/:id/assign
+// ---------------------------------------------------------------------------
+export const assignTicketSchema = z.object({
+  agentId: z.string().uuid('Invalid agent ID').nullable().optional(),
+  teamId: z.string().uuid('Invalid team ID').nullable().optional(),
+});

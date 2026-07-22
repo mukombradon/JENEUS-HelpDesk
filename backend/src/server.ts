@@ -14,6 +14,20 @@ import config from './config';
 import { errorHandler } from './middleware/errorHandler';
 import routes from './routes';
 import { setupSocket } from './socket';
+import './workers/slaCheck';
+
+// ---------------------------------------------------------------------------
+// Production safety checks
+// ---------------------------------------------------------------------------
+if (config.nodeEnv === 'production') {
+  const missing: string[] = [];
+  if (!process.env.JWT_ACCESS_SECRET) missing.push('JWT_ACCESS_SECRET');
+  if (!process.env.JWT_REFRESH_SECRET) missing.push('JWT_REFRESH_SECRET');
+  if (missing.length > 0) {
+    console.error(`[FATAL] ${missing.join(' and ')} must be set in production`);
+    process.exit(1);
+  }
+}
 
 const app = express();
 const httpServer = createServer(app);

@@ -95,9 +95,9 @@ export default function ResetPasswordPage() {
           {/* Logo */}
           <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-lg">
             <img
-              src="/logo.jpeg"
+              src="/JENEUS-logo.png"
               alt="JENEUS"
-              className="h-14 w-14 rounded-lg object-cover"
+              className="h-14 w-14 rounded-xl object-cover"
             />
           </div>
           <CardTitle className="text-base">Set new password</CardTitle>

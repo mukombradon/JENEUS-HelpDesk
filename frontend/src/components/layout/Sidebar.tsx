@@ -50,9 +50,9 @@ export default function Sidebar() {
       >
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md">
           <img
-            src="/logo.jpeg"
+            src="/JENEUS-logo.png"
             alt="JENEUS"
-            className="h-7 w-7 rounded-md object-cover"
+            className="h-7 w-7 rounded-lg object-cover"
           />
         </div>
         {!sidebarCollapsed && (

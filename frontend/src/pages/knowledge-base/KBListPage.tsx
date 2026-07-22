@@ -73,7 +73,7 @@ export default function KBListPage() {
   const { data: categoriesData } = useQuery({
     queryKey: ["kb", "categories"],
     queryFn: () =>
-      api.get<{ id: string; name: string }[]>("/kb/categories").then((r) => r.data),
+      api.get<{ data: { id: string; name: string; icon: string }[] }>("/categories").then((r) => r.data.data ?? []),
   });
   const categories = categoriesData ?? [];
 
@@ -83,7 +83,7 @@ export default function KBListPage() {
     queryFn: () => {
       const params: Record<string, unknown> = { page, limit: PAGE_SIZE };
       if (search) params.search = search;
-      if (categoryFilter && categoryFilter !== "all") params.category_id = categoryFilter;
+      if (categoryFilter && categoryFilter !== "all") params.categoryId = categoryFilter;
       return api
         .get<PaginatedResponse<KnowledgeArticle>>("/kb/articles", { params })
         .then((r) => r.data);
@@ -217,8 +217,8 @@ export default function KBListPage() {
                     )}
                   </div>
                   <p className="text-xs text-ink-muted line-clamp-3 leading-relaxed">
-                    {article.content
-                      ? article.content.replace(/<[^>]*>/g, "").slice(0, 200)
+                    {article.body
+                      ? article.body.replace(/<[^>]*>/g, "").slice(0, 200)
                       : "No description available."}
                   </p>
                   <div className="flex items-center gap-3 text-xs text-ink-subtle pt-1">

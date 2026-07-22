@@ -387,17 +387,17 @@ export const kb = {
     search?: string;
     category_id?: string;
     is_published?: boolean;
-  }) => api.get<PaginatedResponse<KnowledgeArticle>>("/knowledge-base", { params }),
+  }) => api.get<PaginatedResponse<KnowledgeArticle>>("/kb/articles", { params }),
 
-  get: (id: string) => api.get<KnowledgeArticle>(`/knowledge-base/${id}`),
+  get: (id: string) => api.get<{ article: KnowledgeArticle }>(`/kb/articles/${id}`),
 
   create: (data: CreateArticleForm) =>
-    api.post<KnowledgeArticle>("/knowledge-base", data),
+    api.post<{ article: KnowledgeArticle }>("/kb/articles", data),
 
   update: (id: string, data: UpdateArticleForm) =>
-    api.patch<KnowledgeArticle>(`/knowledge-base/${id}`, data),
+    api.patch<{ article: KnowledgeArticle }>(`/kb/articles/${id}`, data),
 
-  delete: (id: string) => api.delete<void>(`/knowledge-base/${id}`),
+  delete: (id: string) => api.delete<void>(`/kb/articles/${id}`),
 };
 
 // ---------------------------------------------------------------------------

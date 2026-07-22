@@ -66,9 +66,9 @@ export default function PortalLoginPage() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl mb-4">
             <img
-              src="/logo.jpeg"
+              src="/JENEUS-logo.png"
               alt="JENEUS"
-              className="w-16 h-16 rounded-xl object-cover"
+              className="w-16 h-16 rounded-2xl object-cover"
             />
           </div>
           <h1 className="text-2xl font-bold text-ink">Client Portal</h1>

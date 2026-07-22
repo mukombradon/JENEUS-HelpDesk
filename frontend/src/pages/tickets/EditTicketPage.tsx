@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -35,7 +35,6 @@ import type {
   User as Agent,
   Team,
   Category,
-  Subcategory,
   TicketType,
   Priority,
 } from "../../types";
@@ -99,7 +98,10 @@ export default function EditTicketPage() {
     refetch,
   } = useQuery({
     queryKey: ["tickets", "detail", id],
-    queryFn: () => api.get<Ticket>(`/tickets/${id}`).then((r) => r.data),
+    queryFn: () =>
+      api
+        .get<{ ticket: Ticket }>(`/tickets/${id}`)
+        .then((r) => r.data.ticket),
     enabled: !!id,
   });
 
@@ -154,8 +156,8 @@ export default function EditTicketPage() {
     queryKey: ["clients", "contacts", clientId],
     queryFn: () =>
       api
-        .get<ClientContact[]>(`/clients/${clientId}/contacts`)
-        .then((r) => r.data),
+        .get<{ contacts: ClientContact[] }>(`/clients/${clientId}/contacts`)
+        .then((r) => r.data.contacts),
     enabled: !!clientId,
   });
 
@@ -169,7 +171,10 @@ export default function EditTicketPage() {
 
   const { data: teams = [] } = useQuery({
     queryKey: ["teams"],
-    queryFn: () => api.get<Team[]>("/teams").then((r) => r.data),
+    queryFn: () =>
+      api
+        .get<{ data: Team[] }>("/teams")
+        .then((r) => r.data.data),
   });
 
   const { data: categories = [] } = useQuery({
@@ -180,14 +185,12 @@ export default function EditTicketPage() {
         .then((r) => r.data.data),
   });
 
-  const { data: subcategories = [] } = useQuery({
-    queryKey: ["categories", "subcategories", categoryId],
-    queryFn: () =>
-      api
-        .get<Subcategory[]>(`/categories/${categoryId}/subcategories`)
-        .then((r) => r.data),
-    enabled: !!categoryId,
-  });
+  // Subcategories are nested inside each category — derive from categories data
+  const subcategories = useMemo(() => {
+    if (!categoryId) return [];
+    const cat = categories.find((c) => c.id === categoryId);
+    return cat?.subcategories ?? [];
+  }, [categoryId, categories]);
 
   // ── Validation ──────────────────────────────────────────────────────
 

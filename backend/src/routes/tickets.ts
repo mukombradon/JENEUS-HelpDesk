@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/auth';
 import { authorize } from '../middleware/rbac';
 import { validate } from '../middleware/validate';
-import { createTicketSchema, updateTicketSchema } from '../validators/ticket';
+import { createTicketSchema, updateTicketSchema, changeStatusSchema, assignTicketSchema } from '../validators/ticket';
 import * as ticketController from '../controllers/ticketController';
 
 const router = Router();
@@ -30,10 +30,10 @@ router.delete('/:id', authorize('admin', 'super_admin'), ticketController.delete
 // ── Status & Assignment ─────────────────────────────────────────────────────
 
 /** PATCH /tickets/:id/status — change ticket status */
-router.patch('/:id/status', ticketController.changeStatus);
+router.patch('/:id/status', validate(changeStatusSchema), ticketController.changeStatus);
 
 /** PATCH /tickets/:id/assign — assign / reassign agent or team */
-router.patch('/:id/assign', ticketController.assign);
+router.patch('/:id/assign', validate(assignTicketSchema), ticketController.assign);
 
 // ── Comments ────────────────────────────────────────────────────────────────
 

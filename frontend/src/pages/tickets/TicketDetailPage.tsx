@@ -292,28 +292,34 @@ export default function TicketDetailPage() {
   } = useQuery({
     queryKey: ["tickets", "detail", id],
     queryFn: () =>
-      api.get<Ticket>(`/tickets/${id}`).then((r) => r.data),
+      api.get<{ ticket: Ticket }>(`/tickets/${id}`).then((r) => r.data.ticket),
     enabled: !!id,
   });
 
   const { data: comments = [] } = useQuery({
     queryKey: ["tickets", "comments", id],
     queryFn: () =>
-      api.get<Comment[]>(`/tickets/${id}/comments`).then((r) => r.data),
+      api
+        .get<{ comments: Comment[] }>(`/tickets/${id}/comments`)
+        .then((r) => r.data.comments),
     enabled: !!id,
   });
 
   const { data: activity = [] } = useQuery({
     queryKey: ["tickets", "activity", id],
     queryFn: () =>
-      api.get<ActivityLog[]>(`/tickets/${id}/activity`).then((r) => r.data),
+      api
+        .get<{ activity: ActivityLog[] }>(`/tickets/${id}/activity`)
+        .then((r) => r.data.activity),
     enabled: !!id,
   });
 
   const { data: client } = useQuery({
     queryKey: ["clients", "detail", ticket?.client_id],
     queryFn: () =>
-      api.get<Client>(`/clients/${ticket!.client_id}`).then((r) => r.data),
+      api
+        .get<{ client: Client }>(`/clients/${ticket!.client_id}`)
+        .then((r) => r.data.client),
     enabled: !!ticket?.client_id,
   });
 
@@ -321,8 +327,8 @@ export default function TicketDetailPage() {
     queryKey: ["clients", "contacts", ticket?.client_id],
     queryFn: () =>
       api
-        .get<ClientContact[]>(`/clients/${ticket!.client_id}/contacts`)
-        .then((r) => r.data),
+        .get<{ contacts: ClientContact[] }>(`/clients/${ticket!.client_id}/contacts`)
+        .then((r) => r.data.contacts),
     enabled: !!ticket?.client_id,
   });
 
@@ -336,7 +342,10 @@ export default function TicketDetailPage() {
 
   const { data: teamsData } = useQuery({
     queryKey: ["teams"],
-    queryFn: () => api.get<Team[]>("/teams").then((r) => r.data),
+    queryFn: () =>
+      api
+        .get<{ data: Team[] }>("/teams")
+        .then((r) => r.data.data),
   });
 
   const agents = agentsData ?? [];
@@ -532,7 +541,7 @@ export default function TicketDetailPage() {
           <Badge variant={statusBadgeVariant(ticket.status)}>
             {ticket.status.replace("_", " ")}
           </Badge>
-          <Badge variant={ticket.priority as keyof typeof statusBadgeVariant extends never ? "default" : never}>
+          <Badge variant="secondary">
             <span className={cn("font-medium", priorityColor(ticket.priority))}>
               ●{" "}
             </span>

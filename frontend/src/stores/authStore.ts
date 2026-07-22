@@ -1,11 +1,11 @@
 import { create } from "zustand";
 import { auth } from "../lib/api";
-import { deepCamelToSnake } from "../lib/utils";
 import type { User } from "../types";
 
 interface AuthState {
   user: User | null;
   accessToken: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
   isInitializing: boolean;
   isLoading: boolean;
@@ -20,6 +20,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   accessToken: localStorage.getItem("accessToken"),
+  refreshToken: localStorage.getItem("refreshToken"),
   isAuthenticated: !!localStorage.getItem("accessToken"),
   isInitializing: !!localStorage.getItem("accessToken"),
   isLoading: false,
@@ -42,6 +43,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({
       user: null,
       accessToken: null,
+      refreshToken: null,
       isAuthenticated: false,
       isInitializing: false,
       error: null,
@@ -51,27 +53,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:4000/api/v1"}/auth/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        },
-      );
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.message || "Login failed. Please try again.");
-      }
-      const data = await response.json();
-      // Normalise only the user object (snake_case → frontend types);
-      // token keys are already snake_case and must not be transformed.
-      const user = deepCamelToSnake(data.user);
-      const { accessToken } = data;
+      const response = await auth.login(email, password);
+      // Response normalizer (Axios interceptor) converts camelCase → snake_case,
+      // but preserves accessToken/refreshToken keys.
+      const { accessToken, refreshToken, user } = response.data;
       localStorage.setItem("accessToken", accessToken);
+      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
       set({
         user,
         accessToken,
+        refreshToken: refreshToken ?? null,
         isAuthenticated: true,
         isInitializing: false,
         isLoading: false,
@@ -83,6 +74,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({
         user: null,
         accessToken: null,
+        refreshToken: null,
         isAuthenticated: false,
         isInitializing: false,
         isLoading: false,

@@ -262,7 +262,10 @@ function UsersTab() {
 function TeamsTab() {
   const { data: teams, isLoading, isError, refetch } = useQuery({
     queryKey: ["settings", "teams"],
-    queryFn: () => api.get<Team[]>("/teams").then((r) => r.data),
+    queryFn: () =>
+      api
+        .get<{ data: Team[] }>("/teams")
+        .then((r) => r.data.data),
   });
 
   if (isLoading) {

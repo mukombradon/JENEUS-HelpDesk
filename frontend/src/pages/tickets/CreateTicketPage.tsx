@@ -35,6 +35,7 @@ import type {
   Team,
   Category,
   Subcategory,
+  Ticket,
   TicketType,
   Priority,
 } from "../../types";
@@ -115,8 +116,8 @@ export default function CreateTicketPage() {
     queryKey: ["clients", "contacts", clientId],
     queryFn: () =>
       api
-        .get<ClientContact[]>(`/clients/${clientId}/contacts`)
-        .then((r) => r.data),
+        .get<{ contacts: ClientContact[] }>(`/clients/${clientId}/contacts`)
+        .then((r) => r.data.contacts),
     enabled: !!clientId,
   });
 
@@ -130,7 +131,10 @@ export default function CreateTicketPage() {
 
   const { data: teams = [] } = useQuery({
     queryKey: ["teams"],
-    queryFn: () => api.get<Team[]>("/teams").then((r) => r.data),
+    queryFn: () =>
+      api
+        .get<{ data: Team[] }>("/teams")
+        .then((r) => r.data.data),
   });
 
   const { data: categories = [] } = useQuery({
@@ -183,7 +187,7 @@ export default function CreateTicketPage() {
         // Upload attachments
         const fileAttachments = attachments.length > 0 ? attachments : undefined;
 
-        const { data: ticket } = await api.post("/tickets", payload);
+        const { data: { ticket } } = await api.post<{ ticket: Ticket }>("/tickets", payload);
 
         // If there are files, upload them to the created ticket
         if (fileAttachments && ticket?.id) {

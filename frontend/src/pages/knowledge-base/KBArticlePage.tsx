@@ -75,7 +75,10 @@ export default function KBArticlePage() {
     refetch,
   } = useQuery({
     queryKey: ["kb", "article", id],
-    queryFn: () => api.get<KnowledgeArticle>(`/kb/articles/${id}`).then((r) => r.data),
+    queryFn: () =>
+      api
+        .get<{ article: KnowledgeArticle }>(`/kb/articles/${id}`)
+        .then((r) => r.data.article),
     enabled: !!id,
   });
 
@@ -225,7 +228,7 @@ export default function KBArticlePage() {
           {/* Article content (rendered HTML) */}
           <div
             className="prose prose-invert max-w-none text-sm text-ink leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: article.content || "" }}
+            dangerouslySetInnerHTML={{ __html: article.body || "" }}
           />
 
           <Separator />

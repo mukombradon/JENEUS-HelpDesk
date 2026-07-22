@@ -80,9 +80,9 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-lg">
             <img
-              src="/logo.jpeg"
+              src="/JENEUS-logo.png"
               alt="JENEUS"
-              className="h-14 w-14 rounded-lg object-cover"
+              className="h-14 w-14 rounded-xl object-cover"
             />
           </div>
           <CardTitle className="text-base">Sign in to JENEUS HelpDesk</CardTitle>

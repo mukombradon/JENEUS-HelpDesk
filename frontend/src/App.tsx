@@ -20,16 +20,26 @@ import EditTicketPage from "./pages/tickets/EditTicketPage";
 // Clients
 import ClientListPage from "./pages/clients/ClientListPage";
 import ClientDetailPage from "./pages/clients/ClientDetailPage";
+import CreateClientPage from "./pages/clients/CreateClientPage";
 
 // Knowledge Base
 import KBListPage from "./pages/knowledge-base/KBListPage";
 import KBArticlePage from "./pages/knowledge-base/KBArticlePage";
+import CreateArticlePage from "./pages/knowledge-base/CreateArticlePage";
+import EditArticlePage from "./pages/knowledge-base/EditArticlePage";
 
 // Reports
 import ReportsPage from "./pages/reports/ReportsPage";
+import SLAPage from "./pages/reports/SLAPage";
+import VolumePage from "./pages/reports/VolumePage";
+import AgentReportPage from "./pages/reports/AgentReportPage";
+import ProblemReportPage from "./pages/reports/ProblemReportPage";
 
 // Settings
 import SettingsPage from "./pages/settings/SettingsPage";
+
+// Problems
+import ProblemsPage from "./pages/problems/ProblemsPage";
 
 // Portal
 import PortalLoginPage from "./pages/portal/PortalLoginPage";
@@ -127,24 +137,21 @@ export default function App() {
 
             {/* Clients */}
             <Route path="/clients" element={<ClientListPage />} />
-            <Route path="/clients/new" element={<div>New Client</div>} />
+            <Route path="/clients/new" element={<CreateClientPage />} />
             <Route path="/clients/:id" element={<ClientDetailPage />} />
 
             {/* Knowledge Base */}
             <Route path="/knowledge-base" element={<KBListPage />} />
-            <Route path="/knowledge-base/new" element={<div>New Article</div>} />
+            <Route path="/knowledge-base/new" element={<CreateArticlePage />} />
             <Route path="/knowledge-base/:id" element={<KBArticlePage />} />
-            <Route
-              path="/knowledge-base/:id/edit"
-              element={<div>Edit Article</div>}
-            />
+            <Route path="/knowledge-base/:id/edit" element={<EditArticlePage />} />
 
             {/* Reports */}
             <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/reports/sla" element={<div>SLA Report</div>} />
-            <Route path="/reports/volume" element={<div>Volume Report</div>} />
-            <Route path="/reports/agents" element={<div>Agent Report</div>} />
-            <Route path="/reports/problems" element={<div>Problem Report</div>} />
+            <Route path="/reports/sla" element={<SLAPage />} />
+            <Route path="/reports/volume" element={<VolumePage />} />
+            <Route path="/reports/agents" element={<AgentReportPage />} />
+            <Route path="/reports/problems" element={<ProblemReportPage />} />
 
             {/* Settings */}
             <Route path="/settings" element={<SettingsPage />} />
@@ -165,7 +172,7 @@ export default function App() {
             <Route path="/notifications" element={<div>Notifications</div>} />
 
             {/* Problems */}
-            <Route path="/problems" element={<div>Problems List</div>} />
+            <Route path="/problems" element={<ProblemsPage />} />
             <Route path="/problems/new" element={<div>New Problem</div>} />
             <Route path="/problems/:id" element={<div>Problem Detail</div>} />
           </Route>
